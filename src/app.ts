@@ -4,11 +4,11 @@
  */
 
 import { getDefaultObjectFromContainer } from "@fluidframework/aqueduct";
-import { getTinyliciousContainer } from "@fluidframework/get-tinylicious-container";
-
 import { DiceRollerContainerRuntimeFactory } from "./containerCode";
 import { IDiceRoller } from "./dataObject";
+import { getOrCreateTinyliciousContainer } from "./get-or-create-container";
 import { renderDiceRoller } from "./view";
+
 
 // In interacting with the service, we need to be explicit about whether we're creating a new document vs. loading
 // an existing one.  We also need to provide the unique ID for the document we are creating or loading from.
@@ -17,9 +17,7 @@ import { renderDiceRoller } from "./view";
 // we'll choose to use the current timestamp.  We'll also choose to interpret the URL hash as an existing document's
 // ID to load from, so the URL for a document load will look something like http://localhost:8080/#1596520748752.
 // These policy choices are arbitrary for demo purposes, and can be changed however you'd like.
-let createNew = false;
 if (location.hash.length === 0) {
-    createNew = true;
     location.hash = Date.now().toString();
 }
 const documentId = location.hash.substring(1);
@@ -31,7 +29,7 @@ async function start(): Promise<void> {
     // production service, but ultimately we'll still be getting a reference to a Container object.  The helper
     // function takes the ID of the document we're creating or loading, the container code to load into it, and a
     // flag to specify whether we're creating a new document or loading an existing one.
-    const container = await getTinyliciousContainer(documentId, DiceRollerContainerRuntimeFactory, createNew);
+    const container = await getOrCreateTinyliciousContainer(documentId, DiceRollerContainerRuntimeFactory);
 
     // In this app, we know our container code provides a default data object that is an IDiceRoller.
     const diceRoller: IDiceRoller = await getDefaultObjectFromContainer<IDiceRoller>(container);
